@@ -52,7 +52,7 @@ class PariwisataController extends Controller
     public function store(Request $request)
     {
         $validateData = $request->validate([
-            'nama_wisata' => 'required|string|max:75',
+            'nama_wisata' => 'required|string|max:100',
             'jenis_wisata' => 'required|string|max:50',
             'desa' => 'required|string|max:50',
             'wisatawan' => 'required|integer|min:0',

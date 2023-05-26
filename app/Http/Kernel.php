@@ -65,5 +65,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin-kecamatan' => \App\Http\Middleware\RoleKecamatanMiddleware::class,
         'admin-pusat' => \App\Http\Middleware\RolePusatMiddleware::class,
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
     ];
 }

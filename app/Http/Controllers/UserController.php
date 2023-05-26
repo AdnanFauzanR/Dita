@@ -94,8 +94,42 @@ class UserController extends Controller
     }
 
     public function index() {
-        $user = User::all();
-        return response()->json($user);
+        $users = User::all();
+        $response = [];
+
+        foreach($users as $user) {
+            $response[] = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'kecamatan' => $user->kecamatan,
+                'password' => $user->password
+            ];
+        }
+        return response()->json($response);
+        // return response()->json($user);
+    }
+
+    public function show($id) {
+        $user = User::find($id);
+        if ($user) {
+            // $decodedPassword = explode('\r\n', $user->password);
+            return response()->json([
+                'success' => true,
+                'admin' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'username' => $user->username,
+                    'kecamatan' => $user->kecamatan,
+                    'password' => $user->password
+                ],
+            ], 201);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Data Admin tidak ditemukan'
+        ], 404);
     }
 
     public function update(Request $request, string $id) {
@@ -114,7 +148,7 @@ class UserController extends Controller
         $user->name = $request->name;
         $user->username = $request->username;
         $user->kecamatan = $request->kecamatan;
-        $user->password = $request->password;
+        $user->password = Hash::make($request->password);
         $user->save();
 
         if($user) {
