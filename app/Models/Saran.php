@@ -9,7 +9,7 @@ class Saran extends Model
 {
     use HasFactory;
 
-    protected $tableName = 'saran';
+    protected $table = 'saran';
     protected $primaryKey = 'id';
     protected $fillable = ['id', 'saran'];
 }

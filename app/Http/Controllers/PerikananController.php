@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Perikanan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class PerikananController extends Controller
+class PerikananController extends Controller implements FromCollection, WithHeadings
 {
     /**
      * Display a listing of the resource.
@@ -28,6 +32,56 @@ class PerikananController extends Controller
         $perikanan = Perikanan::where('kecamatan', $user->kecamatan)->get();
         return response()->json($perikanan);
     }
+
+    public function indexByKecamatan($komoditi) {
+        $data = Perikanan::where('komoditi', $komoditi)
+                        ->select('kecamatan',
+                        DB::raw('SUM(volume) as total_volume'),
+                        DB::raw('SUM(nilai_produksi) as total_nilai_produksi')
+                    )
+                        ->groupBy('kecamatan')
+                        ->get();
+
+        return response()->json($data);
+    }
+
+    public function indexByYear($year) {
+        $data = Perikanan::whereYear('updated_at', $year)
+                        ->select('komoditi','kecamatan',
+                        DB::raw('SUM(volume) as total_volume'),
+                        DB::raw('SUM(nilai_produksi) as total_nilai_produksi')
+                    )
+                        ->groupBy('komoditi', 'kecamatan')
+                        ->get();
+
+        return response()->json($data);
+    }
+
+    protected $komoditi;
+
+    public function downloadExcel($komoditi) {
+        $filename = $komoditi . '_data.xlsx';
+        return Excel::download($this, $filename);
+    }
+
+    public function collection() {
+        return Perikanan::where('komoditi', $this->komoditi)
+        ->select('kecamatan',
+        DB::raw('SUM(volume) as total_volume'),
+        DB::raw('SUM(nilai_produksi) as total_nilai_produksi')
+    )
+        ->groupBy('kecamatan')
+        ->get();
+    }
+
+    public function headings(): array {
+        return [
+            'Kecamatan',
+            'Volume',
+            'Nilai Produksi'
+        ];
+    }
+
 
     /**
      * Store a newly created resource in storage.

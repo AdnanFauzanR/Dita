@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DownloadPDFController;
 use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\KomoditiController;
 use App\Http\Controllers\KontenBannerController;
@@ -29,6 +30,8 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 //Perikanan Route API
 Route::get('/Perikanan', [PerikananController::class, 'index'])->middleware('admin');
+Route::get('/Perikanan/{komoditi}', [PerikananController::class, 'indexByKecamatan']);
+Route::get('/Perikanan/{year}', [PerikananController::class, 'indexByYear'])->middleware('admin');
 Route::get('/Perikanan/{id}', [PerikananController::class, 'show'])->middleware('admin');
 Route::get('/PerikananByUser', [PerikananController::class, 'indexByUser'])->middleware('admin');
 Route::post('/Perikanan', [PerikananController::class, 'store'])->middleware('admin');
@@ -37,6 +40,9 @@ Route::delete('/Perikanan/{id}', [PerikananController::class, 'destroy'])->middl
 
 //Pertanian Route API
 Route::get('/Pertanian', [PertanianController::class, 'index'])->middleware('admin');
+Route::get('/Pertanian/{komoditi}', [PertanianController::class, 'indexByKecamatan']);
+Route::get('/Pertanian/{year}', [PertanianController::class, 'indexByYear'])->middleware('admin');
+Route::get('/Pertanian/{year}/download', [PertanianController::class, 'downloadPDF'])->middleware('admin');
 Route::get('/Pertanian/{id}', [PertanianController::class, 'show'])->middleware('admin');
 Route::get('/PertanianByUser', [PertanianController::class, 'indexByUser'])->middleware('admin');
 Route::middleware('admin')->post('/Pertanian', [PertanianController::class, 'store']);
@@ -45,6 +51,8 @@ Route::delete('/Pertanian/{id}', [PertanianController::class, 'destroy'])->middl
 
 //Perindustrian Route API
 Route::get('/Perindustrian', [PerindustrianController::class, 'index'])->middleware('admin');
+Route::get('/Perindustrian/{komoditi}', [PerindustrianController::class, 'indexByKecamatan']);
+Route::get('/Perindustrian/{year}', [PerindustrianController::class, 'indexByYear'])->middleware('admin');
 Route::get('/Perindustrian/{id}', [PerindustrianController::class, 'show'])->middleware('admin');
 Route::get('/PerindustrianByUser', [PerindustrianController::class, 'indexByUser'])->middleware('admin');
 Route::post('/Perindustrian', [PerindustrianController::class, 'store'])->middleware('admin');
@@ -53,6 +61,8 @@ Route::delete('/Perindustrian/{id}', [PerindustrianController::class, 'destroy']
 
 //Pariwisata Route API
 Route::get('/Pariwisata', [PariwisataController::class, 'index'])->middleware('admin');
+Route::get('/Pariwisata/{nama_wisata}', [PariwisataController::class, 'indexByNamaWisata']);
+Route::get('/Pariwisata/{year}', [PariwisataController::class, 'indexByYear'])->middleware('admin');
 Route::get('/Pariwisata/{id}', [PariwisataController::class, 'show'])->middleware('admin');
 Route::get('/PariwisataByUser', [PariwisataController::class, 'indexByUser'])->middleware('admin');
 Route::post('/Pariwisata', [PariwisataController::class, 'store'])->middleware('admin');
@@ -61,6 +71,8 @@ Route::delete('/Pariwisata/{id}', [PariwisataController::class, 'destroy'])->mid
 
 //Peternakan Route API
 Route::get('/Peternakan', [PeternakanController::class, 'index'])->middleware('admin');
+Route::get('/Peternakan/{komoditi}', [PeternakanController::class, 'indexByKecamatan']);
+Route::get('/Peternakan/{year}', [PeternakanController::class, 'indexByYear'])->middleware('admin');
 Route::get('/Peternakan/{id}', [PeternakanController::class, 'show'])->middleware('admin');
 Route::get('/PeternakanByUser', [PeternakanController::class, 'indexByUser'])->middleware('admin');
 Route::post('/Peternakan', [PeternakanController::class, 'store'])->middleware('admin');
@@ -90,6 +102,8 @@ Route::delete('/Konten Berita/{id}', [KontenBeritaController::class, 'destroy'])
 //Route Komoditi API
 Route::get('/Komoditi', [KomoditiController::class, 'index']);
 Route::get('/KomoditiBySektor', [KomoditiController::class, 'indexParticular']);
+Route::get('/CountSektor', [KomoditiController::class, 'countKomoditiBySektor'])->middleware('admin');
+Route::get('/Count {sektor}', [KomoditiController::class, 'countKomoditiByBidang'])->middleware('admin');
 Route::get('/Komoditi/{id}', [KontenBeritaController::class, 'show']);
 Route::post('/Komoditi', [KomoditiController::class, 'store'])->middleware('admin-pusat');
 Route::post('/Komoditi/{id}', [KomoditiController::class, 'update'])->middleware('admin-pusat');
@@ -104,8 +118,13 @@ Route::post('/Saran', [SaranController::class, 'store']);
 Route::delete('/Saran/{id}', [SaranController::class, 'destroy']);
 
 //Laporan Komoditi Downloader
-Route::get('/{sektor}/{year}/downloadpdf', [LaporanController::class, 'downloadPDF']);
-Route::get('/{sektor}/{year}/downloadxslx', [LaporanController::class, 'downloadExcel']);
+Route::get('/{sektor} {year}/pdf', [LaporanController::class, 'downloadPDF']);
+Route::get('/{sektor} {year}/xslx', [LaporanController::class, 'downloadExcel']);
+Route::get('/Pertanian {komoditi}/downloadxslx', [PertanianController::class, 'downloadExcel']);
+Route::get('/Peternakan {komoditi}/downloadxslx', [PeternakanController::class, 'downloadExcel']);
+Route::get('/Perikanan {komoditi}/downloadxslx', [PerikananController::class, 'downloadExcel']);
+Route::get('/Perindustrian {komoditi}/downloadxslx', [PerindustrianController::class, 'downloadExcel']);
+Route::get('/Pariwisata/{nama_wisata}/downloadxslx', [PariwisataController::class, 'downloadExcel']);
 
 //User API
 Route::get('/Admin', [UserController::class, 'index']);

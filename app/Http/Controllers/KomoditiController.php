@@ -79,6 +79,24 @@ class KomoditiController extends Controller
 
     }
 
+    public function countKomoditiBySektor()
+{
+    $countBySektor = Komoditi::select('sektor', \DB::raw('COUNT(*) as count'))
+        ->groupBy('sektor')
+        ->get();
+
+    return response()->json($countBySektor);
+}
+
+    public function countKomoditiByBidang($sektor) {
+        $countByBidang = Komoditi::where('sektor', $sektor)
+                            ->select('bidang', \DB::raw('COUNT(*) as count'))
+                            ->groupBy('bidang')
+                            ->get();
+
+        return response()->json($countByBidang);
+    }
+
     /**
      * Display the specified resource.
      */

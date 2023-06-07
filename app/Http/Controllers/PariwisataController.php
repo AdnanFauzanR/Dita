@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Pariwisata;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class PariwisataController extends Controller
+class PariwisataController extends Controller implements FromCollection, WithHeadings
 {
     /**
      * Display a listing of the resource.
@@ -44,6 +48,53 @@ class PariwisataController extends Controller
         }
         $pariwisata = Pariwisata::where('kecamatan', $user->kecamatan)->get();
         return response()->json($pariwisata);
+    }
+
+    public function indexByNamaWisata($nama_wisata) {
+        $data = Pariwisata::where('nama_wisata', $nama_wisata)
+                        ->select('nama_wisata',
+                        DB::raw('SUM(wisatawan) as total_wisatawan'),
+                    )
+                        ->groupBy('nama_wisata')
+                        ->get();
+
+        return response()->json($data);
+    }
+
+    public function indexByYear($year) {
+        $data = Pariwisata::whereYear('updated_at', $year)
+                        ->select('nama_wisata', 'jenis_wisata', 'kecamatan', 'desa',
+                        DB::raw('SUM(wisatawan) as total_wisatawan'),
+                    )
+                        ->groupBy('nama_wisata', 'jenis_wisata','kecamatan', 'desa')
+                        ->get();
+
+        return response()->json($data);
+    }
+
+    protected $nama_wisata;
+
+    public function downloadExcel($nama_wisata) {
+        $filename = $nama_wisata . '_data.xlsx';
+        return Excel::download($this, $filename);
+    }
+
+    public function collection() {
+        return Pariwisata::where('nama_wisata', $this->nama_wisata)
+        ->select('nama_wisata', 'kecamatan', 'desa',
+        DB::raw('SUM(wisatawan) as total_wisatawan'),
+    )
+        ->groupBy('nama_wisata', 'kecamatan', 'desa')
+        ->get();
+    }
+
+    public function headings():array {
+        return [
+            'Nama Wisata',
+            'Kecamatan',
+            'Desa',
+            'Wisatawan'
+        ];
     }
 
     /**

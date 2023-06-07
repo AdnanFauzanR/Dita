@@ -52,6 +52,7 @@ class LaporanController extends Controller implements FromCollection, WithHeadin
                 $fileName = 'pertanian_data_' . $year . '.pdf';
                 return $pdf->download($fileName);
 
+
             case 'Perikanan':
                 $data = Perikanan::whereYear('updated_at', $year)
                         ->select('komoditi','kecamatan',

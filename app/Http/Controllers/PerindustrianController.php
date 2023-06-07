@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Perindustrian;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class PerindustrianController extends Controller
+class PerindustrianController extends Controller implements FromCollection, WithHeadings
 {
     /**
      * Display a listing of the resource.
@@ -27,6 +31,51 @@ class PerindustrianController extends Controller
         $user = JWTAuth::parseToken()->authenticate();
         $perindustrian = Perindustrian::where('kecamatan', $user->kecamatan)->get();
         return response()->json($perindustrian);
+    }
+
+    public function indexByKecamatan($komoditi) {
+        $data = Perindustrian::where('komoditi', $komoditi)
+                        ->select('kecamatan',
+                        DB::raw('SUM(potensi_kandungan) as total_potensi_kandungan'),
+                    )
+                        ->groupBy('kecamatan')
+                        ->get();
+
+        return response()->json($data);
+    }
+
+    public function indexByYear($year) {
+        $data = Perindustrian::whereYear('updated_at', $year)
+                        ->select('komoditi','kecamatan',
+                        DB::raw('SUM(potensi_kandungan) as total_potensi_kandungan'),
+                    )
+                        ->groupBy('komoditi', 'kecamatan')
+                        ->get();
+
+        return response()->json($data);
+    }
+
+    protected $komoditi;
+
+    public function downloadExcel($komoditi) {
+        $filename = $komoditi . '_data.xlsx';
+        return Excel::download($this, $filename);
+    }
+
+    public function collection() {
+        return Perindustrian::where('komoditi', $this->komoditi)
+        ->select('kecamatan',
+        DB::raw('SUM(potensi_kandungan) as total_potensi_kandungan'),
+    )
+        ->groupBy('kecamatan')
+        ->get();
+    }
+
+    public function headings():array {
+        return [
+            'Kecamatan',
+            'Potensi Kandungan'
+        ];
     }
 
     /**

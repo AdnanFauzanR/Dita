@@ -38,7 +38,7 @@ class SaranController extends Controller
 
         return response()->json([
             'message' => 'Saran berhasil ditambahkan',
-            'peternakan' => $saran
+            'saran' => $saran
         ]);
     }
 

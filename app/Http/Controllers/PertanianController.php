@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pertanian;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class PertanianController extends Controller
+class PertanianController extends Controller implements FromCollection, WithHeadings
 {
     /**
      * Display a listing of the resource.
@@ -46,6 +51,56 @@ class PertanianController extends Controller
         }
         $pertanian = Pertanian::where('kecamatan', $user->kecamatan)->get();
         return response()->json($pertanian);
+    }
+
+    public function indexByKecamatan($komoditi) {
+        $data = Pertanian::where('komoditi', $komoditi)
+                            ->select('kecamatan',
+                                DB::raw('SUM(luas_lahan) as total_luas_lahan'),
+                                DB::raw('SUM(produksi) as total_produksi'),
+                                DB::raw('SUM(produktivitas) as total_produktitas')
+                            )->groupBy('kecamatan')
+                            ->get();
+        return response()->json($data);
+    }
+
+    public function indexByYear($year) {
+        $data = Pertanian::whereYear('updated_at', $year)
+                        ->select('komoditi','bidang','kecamatan',
+                        DB::raw('SUM(luas_lahan) as total_luas_lahan'),
+                        DB::raw('SUM(produksi) as total_produksi'),
+                        DB::raw('SUM(produktivitas) as total_produktivitas')
+                    )
+                        ->groupBy('komoditi', 'bidang', 'kecamatan')
+                        ->get();
+
+        return response()->json($data);
+    }
+
+    protected $komoditi;
+
+    public function downloadExcel($komoditi) {
+        $filename = $komoditi . '_data.xlsx';
+        return Excel::download($this, $filename);
+    }
+
+    public function collection() {
+        return Pertanian::where('komoditi', $this->komoditi)
+        ->select('kecamatan',
+            DB::raw('SUM(luas_lahan) as total_luas_lahan'),
+            DB::raw('SUM(produksi) as total_produksi'),
+            DB::raw('SUM(produktivitas) as total_produktitas')
+        )->groupBy('kecamatan')
+        ->get();
+    }
+
+    public function headings():array {
+        return [
+            'Kecamatan',
+            'Luas Lahan',
+            'Produksi',
+            'Produktivitas'
+        ];
     }
 
     /**

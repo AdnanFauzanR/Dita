@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Peternakan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class PeternakanController extends Controller
+class PeternakanController extends Controller implements FromCollection, WithHeadings
 {
     /**
      * Display a listing of the resource.
@@ -28,6 +32,75 @@ class PeternakanController extends Controller
         $user = JWTAuth::parseToken()->authenticate();
         $peternakan = Peternakan::where('kecamatan', $user->kecamatan)->get();
         return response()->json($peternakan);
+    }
+
+    public function indexByKecamatan($komoditi) {
+        $data = Peternakan::where('komoditi', $komoditi)
+        ->select('kecamatan',
+        DB::raw('SUM(total) as total_total'),
+        DB::raw('SUM(kelahiran) as total_kelahiran'),
+        DB::raw('SUM(kematian) as total_kematian'),
+        DB::raw('SUM(pemotongan) as total_pemotongan'),
+        DB::raw('SUM(ternak_masuk) as total_ternak_masuk'),
+        DB::raw('SUM(ternak_keluar) as total_ternak_keluar'),
+        DB::raw('SUM(populasi) as total_populasi'),
+    )
+        ->groupBy('kecamatan')
+        ->get();
+
+        return response()->json($data);
+    }
+
+    public function indexByYear($year) {
+        $data = Peternakan::whereYear('updated_at', $year)
+                        ->select('komoditi','kecamatan',
+                        DB::raw('SUM(total) as total_total'),
+                        DB::raw('SUM(kelahiran) as total_kelahiran'),
+                        DB::raw('SUM(kematian) as total_kematian'),
+                        DB::raw('SUM(pemotongan) as total_pemotongan'),
+                        DB::raw('SUM(ternak_masuk) as total_ternak_masuk'),
+                        DB::raw('SUM(ternak_keluar) as total_ternak_keluar'),
+                        DB::raw('SUM(populasi) as total_populasi'),
+                    )
+                        ->groupBy('komoditi', 'kecamatan')
+                        ->get();
+
+        return response()->json($data);
+    }
+
+    protected $komoditi;
+
+    public function downloadExcel($komoditi) {
+        $filename = $komoditi . '_data.xlsx';
+        return Excel::download($this, $filename);
+    }
+
+    public function collection() {
+        return Peternakan::where('komoditi', $this->komoditi)
+        ->select('kecamatan',
+        DB::raw('SUM(total) as total_total'),
+        DB::raw('SUM(kelahiran) as total_kelahiran'),
+        DB::raw('SUM(kematian) as total_kematian'),
+        DB::raw('SUM(pemotongan) as total_pemotongan'),
+        DB::raw('SUM(ternak_masuk) as total_ternak_masuk'),
+        DB::raw('SUM(ternak_keluar) as total_ternak_keluar'),
+        DB::raw('SUM(populasi) as total_populasi'),
+    )
+        ->groupBy('kecamatan')
+        ->get();
+    }
+
+    public function headings(): array {
+        return [
+            'Kecamatan',
+            'Total',
+            'Kelahiran',
+            'Kematian',
+            'Pemotongan',
+            'Ternak Masuk',
+            'Ternak Keluar',
+            'Populasi'
+        ];
     }
 
     /**

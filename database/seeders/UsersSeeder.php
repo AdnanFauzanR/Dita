@@ -25,7 +25,7 @@ class UsersSeeder extends Seeder
                 'username' => 'adnanadnan',
                 'name' => 'Adnan ji',
                 'kecamatan' => 'Bengo',
-                'role_id' => '644e27a78c6b6',
+                'role_id' => '647dd11aca264',
                 'password' => 'abcdf12345'
             ],
         ];
