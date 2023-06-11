@@ -57,7 +57,7 @@ class UserController extends Controller
         }
 
         $credentials = $request->only('username', 'password');
-        $token = JWTAuth::attempt($credentials, ['exp' => Carbon\Carbon::now()->addDays(1)->timestamp]);
+        $token = JWTAuth::attempt($credentials);
         if($token === false){
             return response()->json([
                 'success' => false,
