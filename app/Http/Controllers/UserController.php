@@ -57,12 +57,12 @@ class UserController extends Controller
         }
 
         $credentials = $request->only('username', 'password');
-
-        if(!$token = JWTAuth::attempt($credentials, ['exp' => Carbon\Carbon::now()->addDays(1)->timestamp])){
+        $token = JWTAuth::attempt($credentials, ['exp' => Carbon\Carbon::now()->addDays(1)->timestamp]);
+        if($token === false){
             return response()->json([
                 'success' => false,
                 'message' => 'Username atau Password Anda salah'
-            ]);
+            ], 404);
         }
 
         $user = User::where('username', $request->username)->with('role')->firstOrFail();
