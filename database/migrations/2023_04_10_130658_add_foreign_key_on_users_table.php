@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table){
-            $table->string('role_id', 13)->after('kecamatan')->required();
-            $table->foreign('role_id')->references('id')->on('roles')->onDelete('restrict');
+            $table->foreignId('role_id')->after('id')->required();
         });
     }
 

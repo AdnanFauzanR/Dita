@@ -26,7 +26,6 @@ class RolesSeeder extends Seeder
 
         foreach ($data as $value) {
             Role::insert([
-                'id' => uniqid(),
                 'name' => $value['name'],
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()

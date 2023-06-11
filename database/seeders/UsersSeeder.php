@@ -23,9 +23,9 @@ class UsersSeeder extends Seeder
         $data = [
             [
                 'username' => 'adnanadnan',
-                'name' => 'Adnan ji',
+                'name' => 'Adnan',
                 'kecamatan' => 'Bengo',
-                'role_id' => '647dd11aca264',
+                'role_id' => 1,
                 'password' => 'abcdf12345'
             ],
         ];
